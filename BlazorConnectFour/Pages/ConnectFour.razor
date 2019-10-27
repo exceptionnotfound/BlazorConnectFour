@@ -50,8 +50,7 @@
             {
                 var x = i;
                 var y = j;
-                <div id="@("piece" + x.ToString() + y.ToString())" 
-                     class="gamepiece @board.Board[i,j].Color.ToString().ToLower()" 
+                <div class="gamepiece @board.Board[i,j].Color.ToString().ToLower()" 
                      @onclick="@(() => PieceClicked(x,y))"></div>
             }
         </div>
