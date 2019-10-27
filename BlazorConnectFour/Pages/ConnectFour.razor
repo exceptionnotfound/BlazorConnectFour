@@ -1,0 +1,59 @@
+﻿@page "/connectfour"
+@using BlazorConnectFour.Data;
+
+<h1>ConnectFour</h1>
+
+@code {
+    GameBoard board = new GameBoard();
+    PieceColor currentTurn = PieceColor.Red;
+}
+
+@functions{
+    private void PieceClicked(int x, int y)
+    {
+        var clickedSpace = board.Board[x, y];
+        if (clickedSpace.Color == PieceColor.Blank)
+        {
+            while (y < 5)
+            {
+                var nextSpace = board.Board[x, y + 1];
+                y = y + 1;
+                if (nextSpace.Color == PieceColor.Blank)
+                    clickedSpace = nextSpace;
+            }
+            clickedSpace.Color = currentTurn;
+
+            SwitchTurns();
+        }
+    }
+
+    private void SwitchTurns()
+    {
+        if(currentTurn == PieceColor.Red)
+        {
+            currentTurn = PieceColor.Yellow;
+        }
+        else
+        {
+            currentTurn = PieceColor.Red;
+        }
+    }
+}
+
+<h2>@currentTurn's Turn!</h2>
+
+<div class="board">
+    @for (int i = 0; i < 7; i++)
+    {
+        <div class="column">
+            @for (int j = 0; j < 6; j++)
+            {
+                var x = i;
+                var y = j;
+                <div id="@("piece" + x.ToString() + y.ToString())" 
+                     class="gamepiece @board.Board[i,j].Color.ToString().ToLower()" 
+                     @onclick="@(() => PieceClicked(x,y))"></div>
+            }
+        </div>
+    }
+</div>
