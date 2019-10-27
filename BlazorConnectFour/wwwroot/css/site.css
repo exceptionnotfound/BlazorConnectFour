@@ -157,7 +157,6 @@ app {
 }
 
 .column {
-    max-width:14.29%;
     min-width:60px;
     min-height:60px;
     height:100%;
@@ -168,7 +167,6 @@ app {
     margin:5px;
     min-height:60px;
     min-width:60px;
-    background-color:white;
     border-radius:50px;
 }
 
