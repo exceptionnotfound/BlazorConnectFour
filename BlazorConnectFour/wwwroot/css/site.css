@@ -181,3 +181,7 @@ app {
 .blank {
     background-color:white;
 }
+
+.winner {
+    border: 4px solid green;
+}

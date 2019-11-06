@@ -4,30 +4,48 @@
 <h1>ConnectFour</h1>
 
 @code {
+    PieceColor winner = PieceColor.Blank;
+    List<Position> winningCells = null;
+
     GameBoard board = new GameBoard();
     PieceColor currentTurn = PieceColor.Red;
 
     private void PieceClicked(int x, int y)
     {
-        var clickedSpace = board.Board[x, y];
-        if (clickedSpace.Color == PieceColor.Blank)
-        {
-            while (y < 5)
-            {
-                var nextSpace = board.Board[x, y + 1];
-                y = y + 1;
-                if (nextSpace.Color == PieceColor.Blank)
-                    clickedSpace = nextSpace;
-            }
-            clickedSpace.Color = currentTurn;
+        // check for a winner - ignore clicks after this point
+        if (winner != PieceColor.Blank) return;
 
-            SwitchTurns();
+        // check the column for next blank cell
+        var move = board.GetNextBlank(x);
+        if (move != null)
+        {
+            var piece = board.Board[move.Column, move.Row];
+            piece.Color = currentTurn;
+
+            // check for a winning move
+            var winCells = board.GetWinningMoveCells(move);
+
+            if (winCells == null)
+            {
+                SwitchTurns();
+            }
+            else
+            {
+                // show winner
+                winner = currentTurn;
+                winningCells = winCells;
+            }
+        }
+        else
+        {
+            // not a valid move - column is full
         }
     }
 
+
     private void SwitchTurns()
     {
-        if(currentTurn == PieceColor.Red)
+        if (currentTurn == PieceColor.Red)
         {
             currentTurn = PieceColor.Yellow;
         }
@@ -36,9 +54,28 @@
             currentTurn = PieceColor.Red;
         }
     }
+
+    private string WinningCellCss(int x, int y)
+    {
+        if (winningCells != null)
+        {
+            foreach (var cell in winningCells)
+            {
+                if (cell.Column == x && cell.Row == y) return "winner";
+            }
+        }
+        return string.Empty;
+    }
 }
 
-<h2>@currentTurn's Turn!</h2>
+@if (winner == PieceColor.Blank)
+{
+    <h2>@currentTurn's Turn!</h2>
+}
+else
+{
+    <h2>@winner has Won!</h2>
+}
 
 <div class="board">
     @for (int i = 0; i < 7; i++)
@@ -48,7 +85,7 @@
             {
                 var x = i;
                 var y = j;
-                <div class="gamepiece @board.Board[i,j].Color.ToString().ToLower()" 
+                <div class="gamepiece @board.Board[i,j].Color.ToString().ToLower() @WinningCellCss(i,j)"
                      @onclick="@(() => PieceClicked(x,y))"></div>
             }
         </div>
