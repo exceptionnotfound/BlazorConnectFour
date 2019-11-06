@@ -61,7 +61,7 @@ namespace BlazorConnectFour.Data
                 // number of cells the same colour - start at 1 for last move
                 var cells = GetMatchingCells(start, direction, colour);
                 Console.WriteLine($"{colour}: {direction} = {cells.Count}");
-                if (cells.Count == WIN) return cells;
+                if (cells.Count >= WIN) return cells;
             }
 
             return null;
