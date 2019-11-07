@@ -9,6 +9,8 @@ namespace BlazorConnectFour.Data
     {
         public PieceColor Color;
 
+        public string Winner = null;
+
         public GamePiece()
         {
             Color = PieceColor.Blank;

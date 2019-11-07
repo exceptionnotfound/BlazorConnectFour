@@ -5,7 +5,6 @@
 
 @code {
     PieceColor winner = PieceColor.Blank;
-    List<Position> winningCells = null;
 
     GameBoard board = new GameBoard();
     PieceColor currentTurn = PieceColor.Red;
@@ -33,7 +32,11 @@
             {
                 // show winner
                 winner = currentTurn;
-                winningCells = winCells;
+                // set CSS to 'winner'
+                foreach (var position in winCells)
+                {
+                    board.Board[position.Column, position.Row].Winner = "winner";
+                }
             }
         }
         else
@@ -55,17 +58,6 @@
         }
     }
 
-    private string WinningCellCss(int x, int y)
-    {
-        if (winningCells != null)
-        {
-            foreach (var cell in winningCells)
-            {
-                if (cell.Column == x && cell.Row == y) return "winner";
-            }
-        }
-        return string.Empty;
-    }
 }
 
 @if (winner == PieceColor.Blank)
@@ -85,7 +77,8 @@ else
             {
                 var x = i;
                 var y = j;
-                <div class="gamepiece @board.Board[i,j].Color.ToString().ToLower() @WinningCellCss(i,j)"
+                var piece = board.Board[i, j];
+                <div class="gamepiece @piece.Color.ToString().ToLower() @piece.Winner"
                      @onclick="@(() => PieceClicked(x,y))"></div>
             }
         </div>
