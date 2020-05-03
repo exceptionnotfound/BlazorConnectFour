@@ -7,11 +7,11 @@
 
     GameBoard board = new GameBoard();
     PieceColor currentTurn = PieceColor.Red;
-    PieceColor winner = PieceColor.Blank;
+    WinningPlay winningPlay;
 
     private void PieceClicked(int x, int y)
     {
-        if (winner != PieceColor.Blank) { return; }
+        if (winningPlay != null) { return; }
 
         GamePiece clickedSpace = board.Board[x, y];
 
@@ -32,8 +32,8 @@
 
         }
 
-        winner = GetWinner();
-        if (winner == PieceColor.Blank)
+        winningPlay = GetWinner();
+        if (winningPlay == null)
         {
             SwitchTurns();
         }
@@ -51,49 +51,45 @@
         }
     }
 
-    private enum EvaluationDirection
+    private WinningPlay GetWinner()
     {
-        Up,
-        UpRight,
-        Right,
-        DownRight
-    }
-    private PieceColor GetWinner()
-    {
-        PieceColor winnerColor = PieceColor.Blank;
+        WinningPlay winningPlay = null;
 
         for (int i = 0; i < 7; i++)
         {
             for (int j = 0; j < 6; j++)
             {
-                PieceColor winner = EvaluatePieceForWinner(i, j, EvaluationDirection.Up);
-                if (winner != PieceColor.Blank) { return winner; }
+                winningPlay = EvaluatePieceForWinner(i, j, EvaluationDirection.Up);
+                if (winningPlay != null) { return winningPlay; }
 
-                winner = EvaluatePieceForWinner(i, j, EvaluationDirection.UpRight);
-                if (winner != PieceColor.Blank) { return winner; }
+                winningPlay = EvaluatePieceForWinner(i, j, EvaluationDirection.UpRight);
+                if (winningPlay != null) { return winningPlay; }
 
-                winner = EvaluatePieceForWinner(i, j, EvaluationDirection.Right);
-                if (winner != PieceColor.Blank) { return winner; }
+                winningPlay = EvaluatePieceForWinner(i, j, EvaluationDirection.Right);
+                if (winningPlay != null) { return winningPlay; }
 
-                winner = EvaluatePieceForWinner(i, j, EvaluationDirection.DownRight);
-                if (winner != PieceColor.Blank) { return winner; }
+                winningPlay = EvaluatePieceForWinner(i, j, EvaluationDirection.DownRight);
+                if (winningPlay != null) { return winningPlay; }
             }
         }
 
-        return winnerColor;
+        return winningPlay;
 
     }
-    private PieceColor EvaluatePieceForWinner(int i, int j, EvaluationDirection dir)
+    private WinningPlay EvaluatePieceForWinner(int i, int j, EvaluationDirection dir)
     {
         GamePiece currentPiece = board.Board[i, j];
         if (currentPiece.Color == PieceColor.Blank)
         {
-            return PieceColor.Blank;
+            return null;
         }
 
         int inARow = 1;
         int iNext = i;
         int jNext = j;
+
+        var winningMoves = new List<string>();
+
         while (inARow < 4)
         {
             switch (dir)
@@ -116,32 +112,51 @@
             if (iNext < 0 || iNext >= 7 || jNext < 0 || jNext >= 6) { break; }
             if (board.Board[iNext, jNext].Color == currentPiece.Color)
             {
+                winningMoves.Add($"{iNext},{jNext}");
                 inARow++;
             }
             else
             {
-                return PieceColor.Blank;
+                return null;
             }
         }
-        return inARow >= 4 ? currentPiece.Color : PieceColor.Blank;
+
+        if (inARow >= 4)
+        {
+            winningMoves.Add($"{i},{j}");
+
+            return new WinningPlay()
+            {
+                WinningMoves = winningMoves,
+                WinningColor = currentPiece.Color,
+                WinningDirection = dir,
+            };
+        }
+
+        return null;
     }
     private void Reset()
     {
         board = new GameBoard();
         currentTurn = PieceColor.Red;
-        winner = PieceColor.Blank;
+        winningPlay = null;
+    }
+
+    private bool IsGamePieceAWinningPiece(WinningPlay winningPlay, int i, int j)
+    {
+        return winningPlay?.WinningMoves?.Contains($"{i},{j}") ?? false;
     }
 }
 
 
-@if (winner == PieceColor.Blank)
+@if (winningPlay == null)
 {
     <h2>@currentTurn's Turn!</h2>
 
 }
 else
 {
-    <h2>@winner Wins! <button class="btn btn-success" @onclick="@(() => Reset())">Reset</button></h2>
+    <h2>@winningPlay.WinningColor Wins! <button class="btn btn-success" @onclick="@(() => Reset())">Reset</button></h2>
 }
 
 <div class="board">
@@ -153,7 +168,8 @@ else
                 int x = i;
                 int y = j;
                 <div class="gamepiece
-                     @board.Board[i,j].Color.ToString().ToLower()" @onclick="@(() => PieceClicked(x,y))"></div>
+                         @board.Board[i,j].Color.ToString().ToLower()" @onclick="@(() => PieceClicked(x,y))"
+                     style="@(IsGamePieceAWinningPiece(winningPlay, i, j)? "opacity: 0.6" : "")"></div>
             }
         </div>
     }
